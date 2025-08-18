@@ -11,5 +11,3 @@ print("Cambie el nombre del repositorio")
 print("soy el feña")
 
 print("Print 2 de muestra")
-
-print("Muestra 3")
