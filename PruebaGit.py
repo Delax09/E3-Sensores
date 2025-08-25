@@ -15,3 +15,5 @@ print("Print 2 de muestra")
 print("print en Visual Studio Enterprise")
 
 print("Soy el cris")
+
+print("Soy el cris desde mi notebook")
