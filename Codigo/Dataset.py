@@ -22,6 +22,12 @@ interseccion11 = {
     "Cobertura": 1.5  # en km²
 }
 
+#insterseccion11["Costo_sensor"] = 1500 #Actualizando un valor
+
+mapa_ciudad = [[interseccion00, interseccion01, interseccion02], 
+               [interseccion10, interseccion11, interseccion12],
+               [interseccion20, interseccion21, interseccion22]]
+
 #Asi hay que recorrer el diccionario
 for clave, valor in interseccion11.items():
     #Diccionario anidado
@@ -57,5 +63,7 @@ demanda_estacionamiento = {
     "Media": 2,
     "Alta": 3
     }
+
+
 
 
