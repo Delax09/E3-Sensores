@@ -19,8 +19,12 @@ interseccion11 = {
         "Ocupacion_estacionamiento": None
         },
     "Costo_sensor": 1800,
-    "Cobertura": 1.5  # en km²
+    "Cobertura": 1.5  # en kmï¿½
 }
+
+'''
+Eliminar la variable "Costo_sensor" y "Cobertura"
+'''
 
 #insterseccion11["Costo_sensor"] = 1500 #Actualizando un valor
 
@@ -38,7 +42,7 @@ for clave, valor in interseccion11.items():
     else:
         print(clave, valor)
 
-#Esto es para que sea más intuitivo para el algoritmo
+#Esto es para que sea mï¿½s intuitivo para el algoritmo
 #para nosotros tener una idea de los datos y el modelado
 zonas = {
     "Comercial" : 1,
