@@ -2,9 +2,12 @@
 Este archivo es de prueba para el modelo de  datos que vamos a utilizar
 """
 
-interseccion11 = {
-    "ID": "11",
-    "Corrdenadas": (1,1),
+from re import escape
+
+
+interseccion00 = {
+    "ID": "00",
+    "Corrdenadas": (0,0),
     "Tipo_zona": 1,
     "Tipo_congestion": 3,
     "Tipo_contaminacion": 2,
@@ -17,9 +20,7 @@ interseccion11 = {
         "PM2.5": 35,
         "NO2": 22,
         "Ocupacion_estacionamiento": None
-        },
-    "Costo_sensor": 1800,
-    "Cobertura": 1.5  # en km²
+        }
 }
 
 #insterseccion11["Costo_sensor"] = 1500 #Actualizando un valor
@@ -64,6 +65,8 @@ demanda_estacionamiento = {
     "Alta": 3
     }
 
-
+sensores = [trafico, aire, estacionamiento]
+valor = [1000, 1500, 2000] #Costo de los sensores, podemos usar un diccionario si es necesario
+cobertura = 0 #Depende si deseamos usarla 
 
 
