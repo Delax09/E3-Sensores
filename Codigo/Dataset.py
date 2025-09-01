@@ -39,7 +39,7 @@ for clave, valor in interseccion11.items():
     else:
         print(clave, valor)
 
-#Esto es para que sea más intuitivo para el algoritmo
+#Esto es para que sea mï¿½s intuitivo para el algoritmo
 #para nosotros tener una idea de los datos y el modelado
 zonas = {
     "Comercial" : 1,
