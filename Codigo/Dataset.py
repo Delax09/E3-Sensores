@@ -4,7 +4,7 @@ Este archivo es de prueba para el modelo de  datos que vamos a utilizar
 
 from re import escape
 
-
+#Acuerdense de hacer commit por si hacen algun cambio
 interseccion00 = {
     "ID": "00",
     "Corrdenadas": (0,0),
