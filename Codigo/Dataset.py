@@ -17,7 +17,7 @@ interseccion11 = {
         "PM2.5": 35,
         "NO2": 22,
         "Ocupacion_estacionamiento": None
-        },
+        }
 }
 
 '''
