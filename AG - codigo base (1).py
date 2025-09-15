@@ -1,31 +1,47 @@
 from random import randint, sample, random
 
 
-def generaIndividuo():
+def generaIndividuo(n, valores, pesos, C):
+    individuo = []
+    for i in range(n):
+        individuo.append(randint(0,n))
+    individuo.append(fitness(individuo,n, valores, pesos, C))
+    return individuo
 
-
-def cruzamiento(indiv1, indiv2, n, valores, pesos, C):
-
-
-def mutacion():
-
-
-def seleccion(poblacion, n):
-
-
-def generaPoblacion():
-  
-
-def fitness():
+def fitness(individuo, n, valores, pesos, C):
     sumValor = 0
     sumPeso = 0
     for i in range(n):
         if individuo[i] == 1:
             sumValor += valores[i]
             sumPeso += pesos[i]
-    if sumPeso > C:
-        return 0  
-    return sumValor
+        if sumPeso > C:
+            return 0
+        return sumValor
+
+def cruzamiento(indiv1, indiv2, n, valores, pesos, C):
+    puntoCruce = randint(1, n-1)
+    hijo = indiv1[:puntoCruce] + indiv2[puntoCruce:]
+    hijo.append(fitness(hijo, n, valores, pesos, C))
+    return hijo
+
+def mutacion(individuo, n, valores, pesos, C):
+    for i in range(n):
+        if random() < tasaMutacion:
+            individuo[i] = 1 - individuo[i]
+    individuo[n] = fitness(individuo, n, valores, pesos, C)
+
+def seleccion(poblacion, n):
+    posibles = sample(poblacion, k)
+    posibles.sort(key=lambda x: x[n], reverse = True)
+    pololos = [posibles[0], posibles[1]]
+    return pololos
+
+def generaPoblacion(n, valores, pesos, C):
+    P = []
+    for i in range(tamPoblacion):
+        P.append(generaIndividuo())
+    return P
 
 def AlgoritmoGenetico():
     
@@ -59,12 +75,12 @@ def AlgoritmoGenetico():
 
 ##Parámetros del AG: (Constantes del programa)
 
-tamPoblacion =          #número de individuos en cada generación
-numGeneraciones =       #número de generaciones
-tasaMutacion =          #probabilidad de que mute un gen de un individuo
-k =                     #número de futuros padres (se escogen los 2 mejores para q lo sean)
-conElitismo = 
-numElegidos =           #número de elegidos para la siguiente generación (con elitismo)
+tamPoblacion = 100       #número de individuos en cada generación
+numGeneraciones = 1000      #número de generaciones
+tasaMutacion =  0.01        #probabilidad de que mute un gen de un individuo
+k = 10                     #número de futuros padres (se escogen los 2 mejores para q lo sean)
+conElitismo = False
+numElegidos = 2        #número de elegidos para la siguiente generación (con elitismo)
 
 ##Datos del problema: mochila 0-1 (Parámetros de entrada al algoritmo AG)
 
