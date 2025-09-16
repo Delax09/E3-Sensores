@@ -1,24 +1,26 @@
+from random import randint
+
 interseccion00 = {
-    "Tipo_congestion": 1,
-    "Tipo_contaminacion": 1,
-    "Demanda_estacionamiento": 1
+    "Tipo_congestion": randint(1,3),
+    "Tipo_contaminacion": randint(1,3),
+    "Demanda_estacionamiento": randint(1,3)
 }
 interserccion01 = {
-    "Tipo_congestion": 2,
-    "Tipo_contaminacion": 2,
-    "Demanda_estacionamiento": 2
+    "Tipo_congestion": randint(1,3),
+    "Tipo_contaminacion": randint(1,3),
+    "Demanda_estacionamiento": randint(1,3)
     }
 
 interseccion10 ={
-    "Tipo_congestion": 3,
-    "Tipo_contaminacion": 3,
-    "Demanda_estacionamiento": 3
+    "Tipo_congestion": randint(1,3),
+    "Tipo_contaminacion": randint(1,3),
+    "Demanda_estacionamiento": randint(1,3)
     }
 
 interseccion11 = {
-    "Tipo_congestion": 4,
-    "Tipo_contaminacion": 4,
-    "Demanda_estacionamiento": 4
+    "Tipo_congestion": randint(1,3),
+    "Tipo_contaminacion": randint(1,3),
+    "Demanda_estacionamiento": randint(1,3)
     }
 
 calles = [interseccion00, interserccion01,
