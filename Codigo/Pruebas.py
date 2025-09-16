@@ -11,7 +11,7 @@ def GeneraPoblacion(poblacion):
         ciudad.append(calle2)
     return ciudad
 
-mapa = GeneraPoblacion(2)
+mapa = GeneraPoblacion(3)
 
 for i, fila in enumerate(mapa):
     print(f"Fila {i}:")
