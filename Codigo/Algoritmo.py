@@ -1,5 +1,10 @@
-from Dataset import calles
 from random import randint, random, choice
+
+decision = input("Aleatorio? Y/N: ")
+if decision.upper() == "Y":
+    from Dataset_Aleatorio import calles
+else:
+    from Dataset_Predefinido import calles
 
 presupuesto_total = 30000 #Presupesto total disponible va cambiando
 c_sensor_estacionamiento = 4000
