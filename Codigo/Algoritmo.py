@@ -6,7 +6,7 @@ if decision.upper() == "Y":
 else:
     from Dataset_Predefinido import calles
 
-presupuesto_total = 30000 #Presupesto total disponible va cambiando
+presupuesto_total = 100000 #Presupesto total disponible va cambiando
 c_sensor_estacionamiento = 4000
 c_sensor_trafico = 10000
 c_sensor_aire = 9000
@@ -104,6 +104,37 @@ def cruzar(padre1, padre2):
         hijo.append(sensores)
     return hijo
 
+def reparar(individuo):
+    """
+    Repara un individuo que excede el presupuesto apagando sensores
+    hasta cumplir el presupuesto. Se apagan primero los sensores con
+    menor beneficio relativo (beneficio / costo).
+    """
+    nuevo = [inter.copy() for inter in individuo]
+    # Mientras el costo supere el presupuesto, apagar el sensor menos eficiente
+    while calcular_costo(nuevo) > presupuesto_total:
+        candidatos = []
+        for idx, inter in enumerate(nuevo):
+            calle = calles[idx]
+            # Para cada sensor encendido, calcular su "beneficio" y ratio beneficio/costo
+            if inter.get("Sensor_trafico"):
+                beneficio = calle.get("Tipo_congestion", 0) or 0
+                candidatos.append((beneficio / c_sensor_trafico if c_sensor_trafico else 0, idx, "Sensor_trafico"))
+            if inter.get("Sensor_aire"):
+                beneficio = calle.get("Tipo_contaminacion", 0) or 0
+                candidatos.append((beneficio / c_sensor_aire if c_sensor_aire else 0, idx, "Sensor_aire"))
+            if inter.get("Sensor_estacionamiento"):
+                beneficio = calle.get("Demanda_estacionamiento", 0) or 0
+                candidatos.append((beneficio / c_sensor_estacionamiento if c_sensor_estacionamiento else 0, idx, "Sensor_estacionamiento"))
+        if not candidatos:
+            # No hay sensores encendidos para apagar -> no se puede reparar
+            break
+        # Ordenar por ratio ascendente (menor beneficio por coste primero)
+        candidatos.sort(key=lambda x: x[0])
+        _, idx_sel, sensor_sel = candidatos[0]
+        nuevo[idx_sel][sensor_sel] = False
+    return nuevo
+
 def algoritmo_genetico(generaciones, poblacion_size, prob_mutacion):
     poblacion = [crear_individuo() for _ in range(poblacion_size)]
     for gen in range(generaciones):
@@ -115,7 +146,15 @@ def algoritmo_genetico(generaciones, poblacion_size, prob_mutacion):
             hijo = mutar(hijo, prob_mutacion)  # Se pasa la probabilidad como argumento
             nueva_poblacion.append(hijo)
         poblacion = nueva_poblacion
-    mejor = max(poblacion, key=fitness)
+
+    # Seleccionar la mejor solución que cumpla el presupuesto
+    viables = [ind for ind in poblacion if calcular_costo(ind) <= presupuesto_total]
+    if viables:
+        mejor = max(viables, key=fitness)
+    else:
+        # Si no hay soluciones viables, reparar la mejor candidata por fitness
+        candidato = max(poblacion, key=fitness)
+        mejor = reparar(candidato)
     return mejor
 
 probabilidad = 0.1 #Probabilida de mutacion puede ser variable controlada por nosotros
