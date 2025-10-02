@@ -20,7 +20,7 @@ interseccion02 = {
 interseccion10 ={
     "Id": "10",
     "Tipo_congestion": 1,
-    "Tipo_contaminacion": 2,
+    "Tipo_contaminacion": 1,
     "Demanda_estacionamiento": 3
     }
 

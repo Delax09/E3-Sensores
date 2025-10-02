@@ -6,19 +6,10 @@ if decision.upper() == "Y":
 else:
     from Dataset_Predefinido import calles
 
-presupuesto_total = 100000 #Presupesto total disponible va cambiando
+presupuesto_total = 100000 #Presupuesto total disponible, puede cambiar
 c_sensor_estacionamiento = 4000
 c_sensor_trafico = 10000
 c_sensor_aire = 9000
-
-"""# Mostrar toda la matriz del dataset
-print("Matriz de intersecciones del dataset:\n")
-for idx, calle in enumerate(calles):
-    print(f"Interseccin {idx}:")
-    for clave, valor in calle.items():
-        print(f"  {clave}: {valor}")
-    print("-" * 40)
-print("\n")"""
 
 def crear_individuo():
     individuo = []
@@ -57,28 +48,13 @@ def fitness(individuo):
         calle = calles[idx]
         # Sensor de tráfico en zona de alta congestión suma más puntos
         if inter["Sensor_trafico"]:
-            if calle["Tipo_congestion"] == 3:
-                puntuacion += 3
-            elif calle["Tipo_congestion"] == 2:
-                puntuacion += 2
-            elif calle["Tipo_congestion"] == 1:
-                puntuacion += 1
+            puntuacion += calle["Tipo_congestion"]
         # Sensor de aire en zona de alta contaminación suma más puntos
         if inter["Sensor_aire"]:
-            if calle["Tipo_contaminacion"] == 3:
-                puntuacion += 3
-            elif calle["Tipo_contaminacion"] == 2:
-                puntuacion += 2
-            elif calle["Tipo_contaminacion"] == 1:
-                puntuacion += 1
+            puntuacion += calle["Tipo_contaminacion"]
         # Sensor de estacionamiento en zona de alta demanda suma más puntos
         if inter["Sensor_estacionamiento"]:
-            if calle["Demanda_estacionamiento"] == 3:
-                puntuacion += 3
-            elif calle["Demanda_estacionamiento"] == 2:
-                puntuacion += 2
-            elif calle["Demanda_estacionamiento"] == 1:
-                puntuacion += 1
+            puntuacion += calle["Demanda_estacionamiento"]
     return puntuacion
 
 def mutar(individuo, prob_mutacion):
@@ -107,29 +83,26 @@ def cruzar(padre1, padre2):
 def reparar(individuo):
     """
     Repara un individuo que excede el presupuesto apagando sensores
-    hasta cumplir el presupuesto. Se apagan primero los sensores con
-    menor beneficio relativo (beneficio / costo).
+    que menos puntos aportan, priorizando conservar sensores en zonas de mayor prioridad.
     """
     nuevo = [inter.copy() for inter in individuo]
-    # Mientras el costo supere el presupuesto, apagar el sensor menos eficiente
+    # Mientras el costo supere el presupuesto, apagar el sensor con menor pérdida de puntos
     while calcular_costo(nuevo) > presupuesto_total:
         candidatos = []
         for idx, inter in enumerate(nuevo):
             calle = calles[idx]
-            # Para cada sensor encendido, calcular su "beneficio" y ratio beneficio/costo
             if inter.get("Sensor_trafico"):
-                beneficio = calle.get("Tipo_congestion", 0) or 0
-                candidatos.append((beneficio / c_sensor_trafico if c_sensor_trafico else 0, idx, "Sensor_trafico"))
+                perdida = calle.get("Tipo_congestion", 0)
+                candidatos.append((perdida, idx, "Sensor_trafico"))
             if inter.get("Sensor_aire"):
-                beneficio = calle.get("Tipo_contaminacion", 0) or 0
-                candidatos.append((beneficio / c_sensor_aire if c_sensor_aire else 0, idx, "Sensor_aire"))
+                perdida = calle.get("Tipo_contaminacion", 0)
+                candidatos.append((perdida, idx, "Sensor_aire"))
             if inter.get("Sensor_estacionamiento"):
-                beneficio = calle.get("Demanda_estacionamiento", 0) or 0
-                candidatos.append((beneficio / c_sensor_estacionamiento if c_sensor_estacionamiento else 0, idx, "Sensor_estacionamiento"))
+                perdida = calle.get("Demanda_estacionamiento", 0)
+                candidatos.append((perdida, idx, "Sensor_estacionamiento"))
         if not candidatos:
-            # No hay sensores encendidos para apagar -> no se puede reparar
             break
-        # Ordenar por ratio ascendente (menor beneficio por coste primero)
+        # Apaga el sensor cuya pérdida de puntos sea mínima
         candidatos.sort(key=lambda x: x[0])
         _, idx_sel, sensor_sel = candidatos[0]
         nuevo[idx_sel][sensor_sel] = False
@@ -157,12 +130,12 @@ def algoritmo_genetico(generaciones, poblacion_size, prob_mutacion):
         mejor = reparar(candidato)
     return mejor
 
-probabilidad = 0.1 #Probabilida de mutacion puede ser variable controlada por nosotros
-generaciones = 50
-poblacion_size = 30
+probabilidad = 0.1 # Probabilidad de mutación controlada por el usuario
+generaciones = 50  # Número de generaciones
+poblacion_size = 30 # Tamaño de la población
 
 # Ejecutar el algoritmo
-mejor_solucion = algoritmo_genetico(generaciones,poblacion_size,probabilidad)
+mejor_solucion = algoritmo_genetico(generaciones, poblacion_size, probabilidad)
 print("Mejor solucion encontrada:\n")
 print(f"{'Id':<5} {'Congestion':<12} {'Contaminacion':<15} {'Demanda Est.':<15} {'Trafico':<8} {'Aire':<6} {'Estacionamiento':<15} {'Costo':<7}")
 print("-" * 80)
