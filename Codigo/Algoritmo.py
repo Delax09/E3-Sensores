@@ -1,74 +1,82 @@
-from random import randint, random, choice
+from random import random, choice
+from copy import deepcopy
 
-decision = input("Aleatorio? Y/N: ")
-if decision.upper() == "Y":
-    from Dataset_Aleatorio import calles
-else:
-    from Dataset_Predefinido import calles
-
-presupuesto_total = 100000 #Presupuesto total disponible, puede cambiar
+# --- ParÃ¡metros por defecto (ajustables desde la vista) ---
+presupuesto_total = 100000
 c_sensor_estacionamiento = 4000
 c_sensor_trafico = 10000
 c_sensor_aire = 9000
 
+# Dataset activo (se debe setear antes de ejecutar)
+calles = None
+
+def set_dataset(aleatorio: bool):
+    """Selecciona dataset: True -> Dataset_Aleatorio, False -> Dataset_Predefinido"""
+    global calles
+    if aleatorio:
+        from Dataset_Aleatorio import calles as _calles
+    else:
+        from Dataset_Predefinido import calles as _calles
+    calles = _calles
+
+def set_presupuesto(valor: int):
+    """Ajusta el presupuesto total (entero)."""
+    global presupuesto_total
+    presupuesto_total = int(valor)
+
 def crear_individuo():
+    """Genera un individuo aleatorio usando el dataset activo."""
+    if calles is None:
+        raise RuntimeError("Dataset no seleccionado. Llama a set_dataset(True/False).")
     individuo = []
-    # Itera sobre cada calle/intersección del dataset
     for calle in calles:
         sensores = {
-            "Id": calle["Id"], 
-            # Asigna aleatoriamente si hay sensor de tráfico
+            "Id": calle["Id"],
             "Sensor_trafico": choice([True, False]),
-            # Asigna aleatoriamente si hay sensor de aire
             "Sensor_aire": choice([True, False]),
-            # Asigna aleatoriamente si hay sensor de estacionamiento
             "Sensor_estacionamiento": choice([True, False])
         }
-        individuo.append(sensores)  # Agrega la configuración de sensores para la intersección
-    return individuo  # Devuelve el individuo generado (lista de intersecciones con sensores)
+        individuo.append(sensores)
+    return individuo
 
 def calcular_costo(individuo):
     costo = 0
     for inter in individuo:
-        if inter["Sensor_trafico"]:
+        if inter.get("Sensor_trafico"):
             costo += c_sensor_trafico
-        if inter["Sensor_aire"]:
+        if inter.get("Sensor_aire"):
             costo += c_sensor_aire
-        if inter["Sensor_estacionamiento"]:
+        if inter.get("Sensor_estacionamiento"):
             costo += c_sensor_estacionamiento
     return costo
 
 def fitness(individuo):
+    """Calcula puntuaciÃ³n; devuelve 0 si supera presupuesto."""
+    if calles is None:
+        raise RuntimeError("Dataset no seleccionado. Llama a set_dataset(True/False).")
     costo = calcular_costo(individuo)
     if costo > presupuesto_total:
-        return 0  # Penaliza si excede el presupuesto
-
+        return 0
     puntuacion = 0
     for idx, inter in enumerate(individuo):
         calle = calles[idx]
-        # Sensor de tráfico en zona de alta congestión suma más puntos
-        if inter["Sensor_trafico"]:
-            puntuacion += calle["Tipo_congestion"]
-        # Sensor de aire en zona de alta contaminación suma más puntos
-        if inter["Sensor_aire"]:
-            puntuacion += calle["Tipo_contaminacion"]
-        # Sensor de estacionamiento en zona de alta demanda suma más puntos
-        if inter["Sensor_estacionamiento"]:
-            puntuacion += calle["Demanda_estacionamiento"]
+        if inter.get("Sensor_trafico"):
+            puntuacion += calle.get("Tipo_congestion", 0)
+        if inter.get("Sensor_aire"):
+            puntuacion += calle.get("Tipo_contaminacion", 0)
+        if inter.get("Sensor_estacionamiento"):
+            puntuacion += calle.get("Demanda_estacionamiento", 0)
     return puntuacion
 
 def mutar(individuo, prob_mutacion):
-    # Crea una nueva lista para el individuo mutado
     nuevo = []
     for inter in individuo:
-        sensores = inter.copy() 
-        # Itera sobre cada tipo de sensor para aplicar posible mutación
+        sensores = inter.copy()
         for sensor in ["Sensor_trafico", "Sensor_aire", "Sensor_estacionamiento"]:
-            # Mutación usando el parámetro prob_mutacion
             if random() < prob_mutacion:
                 sensores[sensor] = not sensores[sensor]
-        nuevo.append(sensores)  # Agrega la intersección mutada a la nueva lista
-    return nuevo  # Devuelve el individuo mutado
+        nuevo.append(sensores)
+    return nuevo
 
 def cruzar(padre1, padre2):
     hijo = []
@@ -81,12 +89,10 @@ def cruzar(padre1, padre2):
     return hijo
 
 def reparar(individuo):
-    """
-    Repara un individuo que excede el presupuesto apagando sensores
-    que menos puntos aportan, priorizando conservar sensores en zonas de mayor prioridad.
-    """
-    nuevo = [inter.copy() for inter in individuo]
-    # Mientras el costo supere el presupuesto, apagar el sensor con menor pérdida de puntos
+    """Apaga sensores hasta cumplir presupuesto; apaga los que menos puntos aportan primero."""
+    if calles is None:
+        raise RuntimeError("Dataset no seleccionado. Llama a set_dataset(True/False).")
+    nuevo = deepcopy(individuo)
     while calcular_costo(nuevo) > presupuesto_total:
         candidatos = []
         for idx, inter in enumerate(nuevo):
@@ -102,48 +108,44 @@ def reparar(individuo):
                 candidatos.append((perdida, idx, "Sensor_estacionamiento"))
         if not candidatos:
             break
-        # Apaga el sensor cuya pérdida de puntos sea mínima
-        candidatos.sort(key=lambda x: x[0])
+        candidatos.sort(key=lambda x: x[0])  # menor pÃ©rdida primero
         _, idx_sel, sensor_sel = candidatos[0]
         nuevo[idx_sel][sensor_sel] = False
     return nuevo
 
-def algoritmo_genetico(generaciones, poblacion_size, prob_mutacion):
+def algoritmo_genetico(generaciones, poblacion_size, prob_mutacion, record_history=False):
+    """Ejecuta el algoritmo; devuelve mejor individuo y opcionalmente historial."""
+    if calles is None:
+        raise RuntimeError("Dataset no seleccionado. Llama a set_dataset(True/False).")
     poblacion = [crear_individuo() for _ in range(poblacion_size)]
+    history = {"generacion": [], "best_fitness": [], "best_cost": []}
     for gen in range(generaciones):
         poblacion = sorted(poblacion, key=fitness, reverse=True)
-        nueva_poblacion = poblacion[:5]
+        mejor_actual = max(poblacion, key=fitness)
+        history["generacion"].append(gen)
+        history["best_fitness"].append(fitness(mejor_actual))
+        history["best_cost"].append(calcular_costo(mejor_actual))
+        elite = poblacion[:max(1, poblacion_size // 6)]
+        nueva_poblacion = elite[:]
         while len(nueva_poblacion) < poblacion_size:
-            padre1, padre2 = choice(poblacion[:15]), choice(poblacion[:15])
+            padre1 = choice(poblacion[:max(1, poblacion_size // 2)])
+            padre2 = choice(poblacion[:max(1, poblacion_size // 2)])
             hijo = cruzar(padre1, padre2)
-            hijo = mutar(hijo, prob_mutacion)  # Se pasa la probabilidad como argumento
+            hijo = mutar(hijo, prob_mutacion)
             nueva_poblacion.append(hijo)
         poblacion = nueva_poblacion
 
-    # Seleccionar la mejor solución que cumpla el presupuesto
     viables = [ind for ind in poblacion if calcular_costo(ind) <= presupuesto_total]
     if viables:
         mejor = max(viables, key=fitness)
     else:
-        # Si no hay soluciones viables, reparar la mejor candidata por fitness
         candidato = max(poblacion, key=fitness)
         mejor = reparar(candidato)
+
+    if record_history:
+        return mejor, history
     return mejor
 
-probabilidad = 0.1 # Probabilidad de mutación controlada por el usuario
-generaciones = 50  # Número de generaciones
-poblacion_size = 30 # Tamaño de la población
-
-# Ejecutar el algoritmo
-mejor_solucion = algoritmo_genetico(generaciones, poblacion_size, probabilidad)
-print("Mejor solucion encontrada:\n")
-print(f"{'Id':<5} {'Congestion':<12} {'Contaminacion':<15} {'Demanda Est.':<15} {'Trafico':<8} {'Aire':<6} {'Estacionamiento':<15} {'Costo':<7}")
-print("-" * 80)
-for idx, inter in enumerate(mejor_solucion):
-    calle = calles[idx]
-    costo = calcular_costo([inter])
-    print(f"{inter['Id']:<5} {calle['Tipo_congestion']:<12} {calle['Tipo_contaminacion']:<15} {calle['Demanda_estacionamiento']:<15} "
-          f"{'Si' if inter['Sensor_trafico'] else 'No':<8} {'Si' if inter['Sensor_aire'] else 'No':<6} {'Si' if inter['Sensor_estacionamiento'] else 'No':<15} {costo:<7}")
-print("-" * 80)
-print(f"Presupuesto: {presupuesto_total}")
-print("Costo total:", calcular_costo(mejor_solucion))
+# Bloque CLI protegido (no se ejecuta al importar)
+if __name__ == "__main__":
+    print("Este archivo estÃ¡ pensado para usarse desde una vista (Streamlit/Flask).")
