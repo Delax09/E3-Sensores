@@ -39,7 +39,7 @@ if st.sidebar.button("Ejecutar algoritmo"):
             total += getattr(Algoritmo, "c_sensor_trafico", 10000)
         if row.get("Sensor_aire"):
             total += getattr(Algoritmo, "c_sensor_aire", 9000)
-        if row.get("Sensor_estacionamiento"):
+        if row.get("Demanda_estacionamiento"):
             total += getattr(Algoritmo, "c_sensor_estacionamiento", 4000)
         return total
 
@@ -48,16 +48,16 @@ if st.sidebar.button("Ejecutar algoritmo"):
     df_detalle = df_detalle.rename(columns={
         "Sensor_trafico": "Sensor Trafico",
         "Sensor_aire": "Sensor Aire",
-        "Sensor_estacionamiento": "Sensor Estacionamiento"
+        "Demanda_estacionamiento": "Demanda Estacionamiento"
     })
-    for col in ["Sensor Trafico", "Sensor Aire", "Sensor Estacionamiento"]:
+    for col in ["Sensor Trafico", "Sensor Aire", "Demanda Estacionamiento"]:
         if col in df_detalle.columns:
             df_detalle[col] = df_detalle[col].apply(lambda x: "Si" if x else "No")
 
     st.subheader("Mejor solucion (por interseccion)")
     # Mostrar también el costo por intersección
     display_cols = [
-        "Id", "Sensor Trafico", "Sensor Aire", "Sensor Estacionamiento",
+        "Id", "Sensor Trafico", "Sensor Aire", "Demanda Estacionamiento",
         "Prioridad Congestion", "Prioridad Contaminacion", "Prioridad Estacionamiento",
         "Costo Interseccion"
     ]

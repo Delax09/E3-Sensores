@@ -34,7 +34,7 @@ def crear_individuo():
             "Id": calle["Id"],
             "Sensor_trafico": choice([True, False]),
             "Sensor_aire": choice([True, False]),
-            "Sensor_estacionamiento": choice([True, False])
+            "Demanda_estacionamiento": choice([True, False])
         }
         individuo.append(sensores)
     return individuo
@@ -46,7 +46,7 @@ def calcular_costo(individuo):
             costo += c_sensor_trafico
         if inter.get("Sensor_aire"):
             costo += c_sensor_aire
-        if inter.get("Sensor_estacionamiento"):
+        if inter.get("Demanda_estacionamiento"):
             costo += c_sensor_estacionamiento
     return costo
 
@@ -64,7 +64,7 @@ def fitness(individuo):
             puntuacion += calle.get("Tipo_congestion", 0)
         if inter.get("Sensor_aire"):
             puntuacion += calle.get("Tipo_contaminacion", 0)
-        if inter.get("Sensor_estacionamiento"):
+        if inter.get("Demanda_estacionamiento"):
             puntuacion += calle.get("Demanda_estacionamiento", 0)
     return puntuacion
 
@@ -72,7 +72,7 @@ def mutar(individuo, prob_mutacion):
     nuevo = []
     for inter in individuo:
         sensores = inter.copy()
-        for sensor in ["Sensor_trafico", "Sensor_aire", "Sensor_estacionamiento"]:
+        for sensor in ["Sensor_trafico", "Sensor_aire", "Demanda_estacionamiento"]:
             if random() < prob_mutacion:
                 sensores[sensor] = not sensores[sensor]
         nuevo.append(sensores)
@@ -82,7 +82,7 @@ def cruzar(padre1, padre2):
     hijo = []
     for i in range(len(padre1)):
         sensores = {}
-        for sensor in ["Sensor_trafico", "Sensor_aire", "Sensor_estacionamiento"]:
+        for sensor in ["Sensor_trafico", "Sensor_aire", "Demanda_estacionamiento"]:
             sensores[sensor] = padre1[i][sensor] if random() < 0.5 else padre2[i][sensor]
         sensores["Id"] = padre1[i]["Id"]
         hijo.append(sensores)
@@ -103,9 +103,9 @@ def reparar(individuo):
             if inter.get("Sensor_aire"):
                 perdida = calle.get("Tipo_contaminacion", 0)
                 candidatos.append((perdida, idx, "Sensor_aire"))
-            if inter.get("Sensor_estacionamiento"):
+            if inter.get("Demanda_estacionamiento"):
                 perdida = calle.get("Demanda_estacionamiento", 0)
-                candidatos.append((perdida, idx, "Sensor_estacionamiento"))
+                candidatos.append((perdida, idx, "Demanda_estacionamiento"))
         if not candidatos:
             break
         candidatos.sort(key=lambda x: x[0])  # menor pérdida primero
