@@ -4,6 +4,8 @@
 import streamlit as st
 import pandas as pd
 import Algoritmo
+import exportar
+
 st.set_page_config(page_title="Optimizador de Sensores", layout="wide")
 st.title("Optimizador de Sensores con Algoritmo Genético")
 
@@ -71,5 +73,39 @@ if st.sidebar.button("Ejecutar algoritmo"):
     st.subheader("Convergencia")
     df_hist = pd.DataFrame(historial)
     st.line_chart(df_hist.set_index("generacion"))
+
+    # --- Exportar CSV usando el módulo independiente 'exportar' ---
+    config = {
+        "Dataset": dataset,
+        "Presupuesto": presupuesto,
+        "Generaciones": generaciones,
+        "Poblacion_size": poblacion_size,
+        "Prob_mutacion": prob_mutacion,
+        "Costo_total": Algoritmo.calcular_costo(mejor),
+        "Fitness": Algoritmo.fitness(mejor),
+        "Costo_sensor_trafico": getattr(Algoritmo, "c_sensor_trafico", None),
+        "Costo_sensor_aire": getattr(Algoritmo, "c_sensor_aire", None),
+        "Costo_sensor_estacionamiento": getattr(Algoritmo, "c_sensor_estacionamiento", None)
+    }
+
+    # Usar sólo las columnas mostradas para la exportación de solución
+    df_export_solution = df_detalle[display_cols] if not df_detalle.empty else df_detalle
+
+    exports = exportar.prepare_exports(df_export_solution, df_hist, config, prefix="optimizador")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.download_button(
+            label="Exportar CSV (solución + configuración)",
+            data=exports["csv_sol"],
+            file_name=exports["filename_sol"],
+            mime="text/csv"
+        )
+    with col2:
+        st.download_button(
+            label="Exportar CSV (historial de convergencia)",
+            data=exports["csv_hist"],
+            file_name=exports["filename_hist"],
+            mime="text/csv"
+        )
 else:
     st.info("Ajusta parametros y pulsa 'Ejecutar algoritmo' en la barra lateral.")
