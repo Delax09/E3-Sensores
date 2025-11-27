@@ -7,3 +7,14 @@ trabajar mas comodos
 Drive: https://drive.google.com/drive/folders/1MwaWD27nyYY23VV8EpC-RO_6lQWvK6KB 
 
 28/8 - Hola. Soy el profesor. Clonado reposirio
+
+
+11/11 
+INSTRUCCIONES DE INSTALACIÓN Y EJECUCIÓN 
+- Es necesario instalar la librería streamlit
+- DESDE TERMINAL: pip install streamlit
+
+- Para ejetutar
+- desde terminal: 
+    - cd codigo 
+    - streamlit run visualizar.py
