@@ -14,7 +14,8 @@ INSTRUCCIONES DE INSTALACIÓN Y EJECUCIÓN
 - Es necesario instalar la librería streamlit
 - DESDE TERMINAL: pip install streamlit
 
-- Para ejetutar
+- Para ejetutar:
+- Ejecutar archivo de convert_to_utf-8.py
 - desde terminal: 
     - cd codigo 
     - streamlit run visualizar.py
